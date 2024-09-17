@@ -1,4 +1,5 @@
 import { WeatherCard } from '@/service/types'
+import { formatCelsiusValue, formatDate } from '@/utils/format'
 import { StyleSheet, Text, View } from 'react-native'
 
 const Card = ({ card }: { card: WeatherCard }) => {
@@ -6,12 +7,10 @@ const Card = ({ card }: { card: WeatherCard }) => {
         <View style={styles.container}>
             <View style={styles.subContainer}>
                 <Text style={styles.cityText}>{card.city.name}</Text>
-                <Text style={styles.timeText}>
-                    {card.date.toLocaleDateString()}
-                </Text>
+                <Text style={styles.timeText}>{formatDate(card.date)}</Text>
             </View>
             <Text style={styles.degreesText}>
-                {card.temp}°{card.tempType}
+                {formatCelsiusValue(card.temp)}°{card.tempType}
             </Text>
         </View>
     )
