@@ -1,13 +1,14 @@
 import React from 'react'
 import Card from '@/components/Card'
 import { ScrollView, StyleSheet, View } from 'react-native'
+import { WeatherCard } from '@/service/types'
 
-const CardList = ({ cards }: { cards: any[] }) => {
+const CardList = ({ cards }: { cards: WeatherCard[] }) => {
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            {cards.map((_c, idx) => (
+            {cards.map((c, idx) => (
                 <View key={idx}>
-                    <Card />
+                    <Card card={c} />
                     {/* add separator except the last item */}
                     {idx !== cards.length - 1 && (
                         <View style={styles.separator}></View>

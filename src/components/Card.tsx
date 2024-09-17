@@ -1,13 +1,18 @@
+import { WeatherCard } from '@/service/types'
 import { StyleSheet, Text, View } from 'react-native'
 
-const Card = () => {
+const Card = ({ card }: { card: WeatherCard }) => {
     return (
         <View style={styles.container}>
             <View style={styles.subContainer}>
-                <Text style={styles.cityText}>Kyiv</Text>
-                <Text style={styles.timeText}>Sun 13 Jul 1 p.m.</Text>
+                <Text style={styles.cityText}>{card.city.name}</Text>
+                <Text style={styles.timeText}>
+                    {card.date.toLocaleDateString()}
+                </Text>
             </View>
-            <Text style={styles.degreesText}>11°C</Text>
+            <Text style={styles.degreesText}>
+                {card.temp}°{card.tempType}
+            </Text>
         </View>
     )
 }

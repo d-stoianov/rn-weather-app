@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import CardList from '@/components/CardList'
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar'
 import {
@@ -8,8 +8,22 @@ import {
     StyleSheet,
     View,
 } from 'react-native'
+import { getWeatherData } from '@/service/WeatherService'
+import { WeatherCard } from '@/service/types'
 
 const App = () => {
+    const [weatherData, setWeatherData] = useState<WeatherCard[]>([])
+
+    useEffect(() => {
+        async function fetchData() {
+            const data = await getWeatherData()
+            setWeatherData(data)
+        }
+        fetchData()
+    }, [])
+
+    console.log('weatherData', weatherData)
+
     return (
         <View style={styles.container}>
             <ExpoStatusBar style="light" />
@@ -18,7 +32,7 @@ const App = () => {
                 resizeMode="cover"
                 style={styles.imageBackground}
             >
-                <CardList cards={new Array(10).fill(null)} />
+                <CardList cards={weatherData} />
             </ImageBackground>
         </View>
     )
