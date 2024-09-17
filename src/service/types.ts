@@ -5,16 +5,11 @@ export interface City {
     picture: string
 }
 
-export interface WeatherDataDTO {
+export interface WeatherDTO {
     date: string
     city: City
     tempType: TemperatureType
     temp: number
 }
 
-export interface WeatherCard {
-    date: Date
-    city: City
-    tempType: 'C'
-    temp: number
-}
+export type CityOverview = City[]
