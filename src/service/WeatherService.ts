@@ -1,4 +1,9 @@
-import { CityOverview, TemperatureType, WeatherDTO } from '@/service/types'
+import {
+    CityOverview,
+    TemperatureType,
+    CityWeatherDetails,
+    WeatherDTO,
+} from '@/service/types'
 import { API_URL } from '@env'
 
 export class WeatherApi {
@@ -43,6 +48,16 @@ export class WeatherService {
         return this.createOverview(rawData)
     }
 
+    public async getDetails(
+        city: string,
+        forceRefresh: boolean = false
+    ): Promise<CityWeatherDetails> {
+        // TODO: save to cache, error handling
+        const rawData = await this.api.getWeather()
+
+        return this.createCityDetails(rawData, city)
+    }
+
     private createOverview(weatherData: WeatherDTO[]): CityOverview {
         // get unique cities
         const uniqueCities = Array.from(
@@ -53,6 +68,24 @@ export class WeatherService {
 
         // sort alphabetically
         return uniqueCities.sort((a, b) => a.name.localeCompare(b.name))
+    }
+
+    private createCityDetails(
+        weatherData: WeatherDTO[],
+        city: string
+    ): CityWeatherDetails {
+        // filter weather dtos by city name
+        const filteredDtos = weatherData.filter((dto) => dto.city.name === city)
+
+        // convert dtos to weather objects
+        return filteredDtos.map((dto) => {
+            return {
+                date: new Date(dto.date),
+                city: dto.city,
+                tempType: 'C',
+                temp: this.convertTmpTypeToCelsius(dto.tempType, dto.temp),
+            }
+        })
     }
 
     private convertTmpTypeToCelsius(

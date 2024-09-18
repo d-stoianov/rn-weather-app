@@ -13,3 +13,12 @@ export interface WeatherDTO {
 }
 
 export type CityOverview = City[]
+
+export type Weather = {
+    date: Date
+    city: City
+    tempType: 'C'
+    temp: number
+}
+
+export type CityWeatherDetails = Weather[]
