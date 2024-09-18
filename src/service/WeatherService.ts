@@ -1,3 +1,4 @@
+import { Weather } from './types'
 import {
     CityOverview,
     TemperatureType,
@@ -78,7 +79,7 @@ export class WeatherService {
         const filteredDtos = weatherData.filter((dto) => dto.city.name === city)
 
         // convert dtos to weather objects
-        return filteredDtos.map((dto) => {
+        const weatherObjects: Weather[] = filteredDtos.map((dto) => {
             return {
                 date: new Date(dto.date),
                 city: dto.city,
@@ -86,6 +87,11 @@ export class WeatherService {
                 temp: this.convertTmpTypeToCelsius(dto.tempType, dto.temp),
             }
         })
+
+        // sort weather objects by date
+        return weatherObjects.sort(
+            (a, b) => a.date.getTime() - b.date.getTime()
+        )
     }
 
     private convertTmpTypeToCelsius(

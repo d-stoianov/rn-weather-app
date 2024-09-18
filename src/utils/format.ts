@@ -4,10 +4,22 @@ export function formatCelsiusValue(value: number): string {
 
 export function formatDate(value: Date): string {
     return value.toLocaleDateString('en-US', {
-        weekday: 'short',
+        weekday: 'long',
         month: 'long',
         day: 'numeric',
-        hour: '2-digit',
-        hour12: true,
     })
+}
+
+// get am/pm values
+export function formatTime(value: Date): string {
+    let hours = value.getHours()
+    const minutes = value.getMinutes()
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+
+    hours = hours % 12
+    hours = hours ? hours : 12
+
+    return minutes === 0
+        ? `${hours} ${ampm}`
+        : `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`
 }
