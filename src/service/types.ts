@@ -22,3 +22,8 @@ export type Weather = {
 }
 
 export type CityWeatherDetails = Weather[]
+
+export type WeatherCacheData = {
+    weather: WeatherDTO[]
+    updatedDate: Date
+}

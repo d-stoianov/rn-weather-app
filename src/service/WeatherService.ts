@@ -1,4 +1,4 @@
-import { Weather } from './types'
+import { Weather, WeatherCacheData } from './types'
 import {
     CityOverview,
     TemperatureType,
@@ -6,6 +6,7 @@ import {
     WeatherDTO,
 } from '@/service/types'
 import { API_URL } from '@env'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export class WeatherApi {
     // class for getting data from the api
@@ -24,8 +25,38 @@ export class WeatherApi {
 export class WeatherCache {
     // class for saving and retrieving data from cache
 
-    getWeather() {
-        // get data from asyncstorage
+    public static isFresh(date: Date): boolean {
+        const now = new Date()
+        const twelveHoursInMilliseconds = 12 * 60 * 60 * 1000
+        const difference = now.getTime() - date.getTime()
+        return difference <= twelveHoursInMilliseconds
+    }
+
+    public async saveWeather(weather: WeatherDTO[]): Promise<void> {
+        try {
+            const data = {
+                weather: weather,
+                updatedDate: new Date().toUTCString(),
+            }
+            await AsyncStorage.setItem('weather', JSON.stringify(data))
+        } catch (e) {
+            console.error('Failed to save data to AsyncStorage', e)
+        }
+    }
+
+    public async getWeather(): Promise<WeatherCacheData | undefined> {
+        try {
+            const value = await AsyncStorage.getItem('weather')
+            if (value !== null) {
+                const parsedValue = JSON.parse(value)
+                return {
+                    weather: parsedValue.weather,
+                    updatedDate: new Date(parsedValue.updatedDate),
+                } as WeatherCacheData
+            }
+        } catch (e) {
+            console.error('Failed to fetch data from AsyncStorage', e)
+        }
     }
 }
 
@@ -43,20 +74,38 @@ export class WeatherService {
     public async getOverview(
         forceRefresh: boolean = false
     ): Promise<CityOverview> {
-        // TODO: save to cache, error handling
-        const rawData = await this.api.getWeather()
+        const cachedData = await this.cache.getWeather()
 
-        return this.createOverview(rawData)
+        if (
+            cachedData &&
+            WeatherCache.isFresh(cachedData.updatedDate) &&
+            !forceRefresh
+        ) {
+            return this.createOverview(cachedData.weather)
+        } else {
+            const rawData = await this.api.getWeather()
+            this.cache.saveWeather(rawData)
+            return this.createOverview(rawData)
+        }
     }
 
     public async getDetails(
         city: string,
         forceRefresh: boolean = false
     ): Promise<CityWeatherDetails> {
-        // TODO: save to cache, error handling
-        const rawData = await this.api.getWeather()
+        const cachedData = await this.cache.getWeather()
 
-        return this.createCityDetails(rawData, city)
+        if (
+            cachedData &&
+            WeatherCache.isFresh(cachedData.updatedDate) &&
+            !forceRefresh
+        ) {
+            return this.createCityDetails(cachedData.weather, city)
+        } else {
+            const rawData = await this.api.getWeather()
+            this.cache.saveWeather(rawData)
+            return this.createCityDetails(rawData, city)
+        }
     }
 
     private createOverview(weatherData: WeatherDTO[]): CityOverview {
