@@ -1,56 +1,35 @@
-import React, { useEffect, useState } from 'react'
-import { StatusBar as ExpoStatusBar } from 'expo-status-bar'
-import {
-    ImageBackground,
-    Platform,
-    StatusBar,
-    StyleSheet,
-    View,
-} from 'react-native'
-import CityCardList from '@/components/CityCardList'
-import { CityOverview } from '@/service/types'
-import {
-    WeatherApi,
-    WeatherCache,
-    WeatherService,
-} from '@/service/WeatherService'
+import { NavigationContainer, DarkTheme } from '@react-navigation/native'
+import { createStackNavigator } from '@react-navigation/stack'
+import HomeScreen from '@/screens/HomeScreen'
+import DetailsScreen from '@/screens/DetailsScreen'
 
-const service = new WeatherService(new WeatherApi(), new WeatherCache())
+import { StackNavigationProp } from '@react-navigation/stack'
 
-const App = () => {
-    const [overviewData, setOverviewData] = useState<CityOverview>([])
+export type RootStackParamList = {
+    Home: undefined
+    Details: { city: string }
+}
 
-    useEffect(() => {
-        async function fetchData() {
-            const data = await service.getOverview()
-            setOverviewData(data)
-        }
-        fetchData()
-    }, [])
+export type RootStackNavigationProp<T extends keyof RootStackParamList> =
+    StackNavigationProp<RootStackParamList, T>
 
+const Stack = createStackNavigator()
+
+const AppNavigator = () => {
     return (
-        <View style={styles.container}>
-            <ExpoStatusBar style="light" />
-            <ImageBackground
-                source={require('./assets/gradient.jpg')}
-                resizeMode="cover"
-                style={styles.imageBackground}
+        <NavigationContainer theme={DarkTheme}>
+            <Stack.Navigator
+                screenOptions={{
+                    headerShown: false, // hide default navigation header
+                    cardStyle: { backgroundColor: 'transparent' },
+                }}
+                initialRouteName="Home"
             >
-                <CityCardList cities={overviewData} />
-            </ImageBackground>
-        </View>
+                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="Details" component={DetailsScreen} />
+            </Stack.Navigator>
+        </NavigationContainer>
     )
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    },
-    imageBackground: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-})
-
-export default App
+export default AppNavigator

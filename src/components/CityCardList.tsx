@@ -12,22 +12,26 @@ const CityCardList = ({ cities }: { cities: City[] }) => {
                     {translate('exploreTheWeather')}
                 </Text>
             </View>
-            {cities.map((c, idx) => (
-                <View key={idx}>
-                    <CityCard city={c} />
-                    {/* add separator except the last item */}
-                    {idx !== cities.length - 1 && (
-                        <View style={styles.separator}></View>
-                    )}
-                </View>
-            ))}
+            <View>
+                {cities.map((c, idx) => (
+                    <View key={idx}>
+                        <CityCard city={c} />
+                        {/* add separator except the last item */}
+                        {idx !== cities.length - 1 && (
+                            <View style={styles.separator}></View>
+                        )}
+                    </View>
+                ))}
+            </View>
         </ScrollView>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        paddingVertical: 48,
+        paddingTop: 64,
+        paddingBottom: 48,
+        gap: 20
     },
     textContainer: {
         width: '100%',

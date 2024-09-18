@@ -1,14 +1,21 @@
+import { RootStackNavigationProp } from '@/App'
 import { City } from '@/service/types'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 const CityCard = ({ city }: { city: City }) => {
+    const { navigate } = useNavigation<RootStackNavigationProp<'Details'>>()
+
     return (
-        <View style={styles.container}>
+        <TouchableOpacity
+            style={styles.container}
+            onPress={() => navigate('Details', { city: city.name })}
+        >
             <View style={styles.imageContainer}>
                 <Image source={{ uri: city.picture }} style={styles.image} />
                 <Text style={styles.text}>{city.name}</Text>
             </View>
-        </View>
+        </TouchableOpacity>
     )
 }
 
