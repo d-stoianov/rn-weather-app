@@ -1,6 +1,7 @@
 import { RootStackParamList } from '@/App'
 import Layout from '@/components/Layout'
 import WeatherCard from '@/components/WeatherCard'
+import { translate } from '@/localization'
 import { CityWeatherDetails } from '@/service/types'
 import {
     WeatherApi,
@@ -31,24 +32,41 @@ const DetailsScreen = () => {
     const { city } = route.params
 
     const [detailsData, setDetailsData] = useState<CityWeatherDetails>([])
+
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
 
+    const [isError, setIsError] = useState<boolean>(false)
+
+    // pull to refresh
     async function onRefresh() {
-        setIsRefreshing(true)
-        setIsLoading(true)
-
-        const data = await service.getDetails(city, true)
-
-        setDetailsData(data)
-        setIsLoading(false)
-        setIsRefreshing(false)
+        try {
+            setIsRefreshing(true)
+            setIsLoading(true)
+            setIsError(false)
+            const data = await service.getDetails(city, true)
+            setDetailsData(data)
+        } catch (error) {
+            setIsError(true)
+        } finally {
+            setIsLoading(false)
+            setIsRefreshing(false)
+        }
     }
 
+    // when component mounts
     useEffect(() => {
         async function fetchData() {
-            const data = await service.getDetails(city)
-            setDetailsData(data)
+            try {
+                setIsLoading(true)
+                setIsError(false)
+                const data = await service.getDetails(city)
+                setDetailsData(data)
+            } catch (error) {
+                setIsError(true)
+            } finally {
+                setIsLoading(false)
+            }
         }
         fetchData()
     }, [])
@@ -66,20 +84,27 @@ const DetailsScreen = () => {
                 }
             >
                 <View style={styles.subContainer}>
-                    <View style={styles.header}>
-                        <Text style={styles.heading}>{city}</Text>
-                        <Text style={styles.subHeading}>
-                            {detailsData[0] && formatDate(detailsData[0]?.date)}
-                        </Text>
-                    </View>
                     {isLoading ? (
                         <ActivityIndicator color={'white'} />
+                    ) : isError ? (
+                        <Text style={styles.errorText}>
+                            {translate('somethingWentWrong')}
+                        </Text>
                     ) : (
-                        <View style={styles.cardContainer}>
-                            {detailsData.map((el, idx) => (
-                                <WeatherCard key={idx} weather={el} />
-                            ))}
-                        </View>
+                        <>
+                            <View style={styles.header}>
+                                <Text style={styles.heading}>{city}</Text>
+                                <Text style={styles.subHeading}>
+                                    {detailsData[0] &&
+                                        formatDate(detailsData[0]?.date)}
+                                </Text>
+                            </View>
+                            <View style={styles.cardContainer}>
+                                {detailsData.map((el, idx) => (
+                                    <WeatherCard key={idx} weather={el} />
+                                ))}
+                            </View>
+                        </>
                     )}
                 </View>
                 <Button title="Go to Home" onPress={goBack} />
@@ -111,6 +136,11 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 32,
         textAlign: 'center',
+    },
+    errorText: {
+        fontSize: 16,
+        color: 'red',
+        width: 300,
     },
     subHeading: {
         color: 'white',

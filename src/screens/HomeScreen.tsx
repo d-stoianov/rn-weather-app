@@ -25,23 +25,38 @@ const HomeScreen = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
 
+    const [isError, setIsError] = useState<boolean>(false)
+
+    // pull to refresh
     async function onRefresh() {
-        setIsRefreshing(true)
-        setIsLoading(true)
+        try {
+            setIsRefreshing(true)
+            setIsLoading(true)
+            setIsError(false)
 
-        const data = await service.getOverview(true)
-
-        setOverviewData(data)
-        setIsLoading(false)
-        setIsRefreshing(false)
+            const data = await service.getOverview(true)
+            setOverviewData(data)
+        } catch (error) {
+            setIsError(true)
+        } finally {
+            setIsLoading(false)
+            setIsRefreshing(false)
+        }
     }
 
+    // when component mounts
     useEffect(() => {
         async function fetchData() {
-            setIsLoading(true)
-            const data = await service.getOverview()
-            setOverviewData(data)
-            setIsLoading(false)
+            try {
+                setIsLoading(true)
+                setIsError(false)
+                const data = await service.getOverview()
+                setOverviewData(data)
+            } catch (error) {
+                setIsError(true)
+            } finally {
+                setIsLoading(false)
+            }
         }
         fetchData()
     }, [])
@@ -64,6 +79,10 @@ const HomeScreen = () => {
                 </View>
                 {isLoading ? (
                     <ActivityIndicator color={'white'} />
+                ) : isError ? (
+                    <Text style={styles.errorText}>
+                        {translate('somethingWentWrong')}
+                    </Text>
                 ) : (
                     <>
                         {overviewData.map((c, idx) => (
@@ -100,6 +119,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: 'white',
         width: 250,
+    },
+    errorText: {
+        fontSize: 16,
+        color: 'red',
+        width: 300,
     },
     separator: {
         marginBottom: 32,

@@ -25,6 +25,7 @@ export class WeatherApi {
 export class WeatherCache {
     // class for saving and retrieving data from cache
 
+    // fresh > 12 hours
     public static isFresh(date: Date): boolean {
         const now = new Date()
         const twelveHoursInMilliseconds = 12 * 60 * 60 * 1000
@@ -58,6 +59,14 @@ export class WeatherCache {
             console.error('Failed to fetch data from AsyncStorage', e)
         }
     }
+
+    public async clearWeather(): Promise<void> {
+        try {
+            await AsyncStorage.setItem('weather', '')
+        } catch (e) {
+            console.error('Failed to delete data from AsyncStorage', e)
+        }
+    }
 }
 
 export class WeatherService {
@@ -83,9 +92,19 @@ export class WeatherService {
         ) {
             return this.createOverview(cachedData.weather)
         } else {
-            const rawData = await this.api.getWeather()
-            this.cache.saveWeather(rawData)
-            return this.createOverview(rawData)
+            try {
+                const rawData = await this.api.getWeather()
+                this.cache.saveWeather(rawData)
+                return this.createOverview(rawData)
+            } catch (error) {
+                if (cachedData) {
+                    // if no internet or error from server, take an old data
+                    return this.createOverview(cachedData.weather)
+                } else {
+                    // if no data from the cache, throw error
+                    throw new Error('No data in the cache and request failed')
+                }
+            }
         }
     }
 
@@ -102,9 +121,19 @@ export class WeatherService {
         ) {
             return this.createCityDetails(cachedData.weather, city)
         } else {
-            const rawData = await this.api.getWeather()
-            this.cache.saveWeather(rawData)
-            return this.createCityDetails(rawData, city)
+            try {
+                const rawData = await this.api.getWeather()
+                this.cache.saveWeather(rawData)
+                return this.createCityDetails(rawData, city)
+            } catch (error) {
+                if (cachedData) {
+                    // if no internet or error from server, take an old data
+                    return this.createCityDetails(cachedData.weather, city)
+                } else {
+                    // if no data from the cache, throw error
+                    throw new Error('No data in the cache and request failed')
+                }
+            }
         }
     }
 
