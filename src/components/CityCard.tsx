@@ -34,11 +34,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#CCCA12F',
         justifyContent: 'center',
         alignItems: 'center',
-        borderColor: 'black',
-        borderStyle: 'solid',
-        borderWidth: 4,
-        borderRadius: 12,
-        position: 'relative',
     },
     image: {
         width: '100%',

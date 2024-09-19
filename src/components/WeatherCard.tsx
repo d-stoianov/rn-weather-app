@@ -16,13 +16,14 @@ const WeatherCard = ({ weather }: { weather: Weather }) => {
 const styles = StyleSheet.create({
     container: {
         height: 20,
-        paddingHorizontal: 40,
         display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
+        gap: 16,
     },
     text: {
+        width: 64,
         color: 'white',
         fontSize: 18,
         textAlign: 'center',

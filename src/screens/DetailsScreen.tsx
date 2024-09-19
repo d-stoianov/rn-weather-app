@@ -45,8 +45,8 @@ const DetailsScreen = () => {
                         </Text>
                     </View>
                     <View style={styles.cardContainer}>
-                        {detailsData.map((el) => (
-                            <WeatherCard weather={el} />
+                        {detailsData.map((el, idx) => (
+                            <WeatherCard key={idx} weather={el} />
                         ))}
                     </View>
                 </View>
@@ -59,6 +59,7 @@ const DetailsScreen = () => {
 const styles = StyleSheet.create({
     container: {
         height: '100%',
+        width: '100%',
         paddingTop: 64,
         paddingBottom: 32,
         display: 'flex',
