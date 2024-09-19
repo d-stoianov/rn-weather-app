@@ -1,10 +1,19 @@
 import { RootStackNavigationProp } from '@/App'
 import { City } from '@/service/types'
 import { useNavigation } from '@react-navigation/native'
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Image } from 'expo-image'
+import { useState } from 'react'
+import {
+    ActivityIndicator,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native'
 
 const CityCard = ({ city }: { city: City }) => {
     const { navigate } = useNavigation<RootStackNavigationProp<'Details'>>()
+    const [isLoading, setIsLoading] = useState<boolean>(false)
 
     return (
         <TouchableOpacity
@@ -12,8 +21,18 @@ const CityCard = ({ city }: { city: City }) => {
             onPress={() => navigate('Details', { city: city.name })}
         >
             <View style={styles.imageContainer}>
-                <Image source={{ uri: city.picture }} style={styles.image} />
-                <Text style={styles.text}>{city.name}</Text>
+                <Image
+                    style={styles.image}
+                    source={{ uri: city.picture }}
+                    cachePolicy={'disk'}
+                    onLoadStart={() => setIsLoading(true)}
+                    onLoadEnd={() => setIsLoading(false)}
+                />
+                {isLoading ? (
+                    <ActivityIndicator style={styles.loader} />
+                ) : (
+                    <Text style={styles.text}>{city.name}</Text>
+                )}
             </View>
         </TouchableOpacity>
     )
@@ -39,6 +58,9 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         borderRadius: 12,
+    },
+    loader: {
+        position: 'absolute',
     },
     text: {
         fontSize: 32,
