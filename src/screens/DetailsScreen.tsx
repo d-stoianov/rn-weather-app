@@ -10,7 +10,15 @@ import {
 import { formatDate } from '@/utils/format'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useEffect, useState } from 'react'
-import { Button, StyleSheet, Text, View } from 'react-native'
+import {
+    ActivityIndicator,
+    Button,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+} from 'react-native'
 
 type DetailsScreenRouteProp = RouteProp<RootStackParamList, 'Details'>
 
@@ -23,6 +31,19 @@ const DetailsScreen = () => {
     const { city } = route.params
 
     const [detailsData, setDetailsData] = useState<CityWeatherDetails>([])
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
+
+    async function onRefresh() {
+        setIsRefreshing(true)
+        setIsLoading(true)
+
+        const data = await service.getDetails(city, true)
+
+        setDetailsData(data)
+        setIsLoading(false)
+        setIsRefreshing(false)
+    }
 
     useEffect(() => {
         async function fetchData() {
@@ -32,11 +53,18 @@ const DetailsScreen = () => {
         fetchData()
     }, [])
 
-    console.log('detailsData', detailsData)
-
     return (
         <Layout>
-            <View style={styles.container}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.container}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={onRefresh}
+                    />
+                }
+            >
                 <View style={styles.subContainer}>
                     <View style={styles.header}>
                         <Text style={styles.heading}>{city}</Text>
@@ -44,40 +72,40 @@ const DetailsScreen = () => {
                             {detailsData[0] && formatDate(detailsData[0]?.date)}
                         </Text>
                     </View>
-                    <View style={styles.cardContainer}>
-                        {detailsData.map((el, idx) => (
-                            <WeatherCard key={idx} weather={el} />
-                        ))}
-                    </View>
+                    {isLoading ? (
+                        <ActivityIndicator color={'white'} />
+                    ) : (
+                        <View style={styles.cardContainer}>
+                            {detailsData.map((el, idx) => (
+                                <WeatherCard key={idx} weather={el} />
+                            ))}
+                        </View>
+                    )}
                 </View>
                 <Button title="Go to Home" onPress={goBack} />
-            </View>
+            </ScrollView>
         </Layout>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        height: '100%',
-        width: '100%',
         paddingTop: 64,
         paddingBottom: 32,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexGrow: 1,
+        justifyContent: 'center',
+        width: '100%',
     },
     subContainer: {
-        width: '100%',
-        display: 'flex',
-        gap: 36,
-    },
-    header: {
-        display: 'flex',
-        gap: 8,
+        flex: 1,
+        gap: 48,
     },
     cardContainer: {
         display: 'flex',
         gap: 16,
+    },
+    header: {
+        gap: 8,
     },
     heading: {
         color: 'white',

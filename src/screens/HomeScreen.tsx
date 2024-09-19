@@ -8,6 +8,7 @@ import {
 import Layout from '@/components/Layout'
 import {
     ActivityIndicator,
+    RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
@@ -20,7 +21,20 @@ const service = new WeatherService(new WeatherApi(), new WeatherCache())
 
 const HomeScreen = () => {
     const [overviewData, setOverviewData] = useState<CityOverview>([])
+
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
+
+    async function onRefresh() {
+        setIsRefreshing(true)
+        setIsLoading(true)
+
+        const data = await service.getOverview(true)
+
+        setOverviewData(data)
+        setIsLoading(false)
+        setIsRefreshing(false)
+    }
 
     useEffect(() => {
         async function fetchData() {
@@ -34,7 +48,15 @@ const HomeScreen = () => {
 
     return (
         <Layout>
-            <ScrollView contentContainerStyle={styles.container}>
+            <ScrollView
+                contentContainerStyle={styles.container}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={onRefresh}
+                    />
+                }
+            >
                 <View style={styles.textContainer}>
                     <Text style={styles.text}>
                         {translate('exploreTheWeather')}
@@ -43,7 +65,7 @@ const HomeScreen = () => {
                 {isLoading ? (
                     <ActivityIndicator color={'white'} />
                 ) : (
-                    <View>
+                    <>
                         {overviewData.map((c, idx) => (
                             <View key={idx}>
                                 <CityCard city={c} />
@@ -53,7 +75,7 @@ const HomeScreen = () => {
                                 )}
                             </View>
                         ))}
-                    </View>
+                    </>
                 )}
             </ScrollView>
         </Layout>
