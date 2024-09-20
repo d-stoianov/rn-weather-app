@@ -25,7 +25,7 @@ export class WeatherApi {
 export class WeatherCache {
     // class for saving and retrieving data from cache
 
-    DATAKEY = 'weather'
+    private DATAKEY = 'weather'
 
     // fresh > 12 hours
     public static isFresh(date: Date): boolean {
@@ -87,15 +87,17 @@ export class WeatherService {
         tmpValue: number
     ): number {
         switch (tmpType) {
-            case 'F':
+            case 'F': {
                 const F_MOD = 32
                 const F_COEF = 1.8
 
                 return (tmpValue - F_MOD) / F_COEF
-            case 'K':
+            }
+            case 'K': {
                 const K_MOD = 273.15
 
                 return tmpValue - K_MOD
+            }
             default:
                 return tmpValue
         }
