@@ -25,12 +25,14 @@ export class WeatherApi {
 export class WeatherCache {
     // class for saving and retrieving data from cache
 
+    DATAKEY = 'weather'
+
     // fresh > 12 hours
     public static isFresh(date: Date): boolean {
         const now = new Date()
-        const twelveHoursInMilliseconds = 12 * 60 * 60 * 1000
+        const cacheLifeTime = 12 * 60 * 60 * 1000 // 12 hours
         const difference = now.getTime() - date.getTime()
-        return difference <= twelveHoursInMilliseconds
+        return difference <= cacheLifeTime
     }
 
     public async saveWeather(weather: WeatherDTO[]): Promise<void> {
@@ -39,7 +41,7 @@ export class WeatherCache {
                 weather: weather,
                 updatedDate: new Date().toUTCString(),
             }
-            await AsyncStorage.setItem('weather', JSON.stringify(data))
+            await AsyncStorage.setItem(this.DATAKEY, JSON.stringify(data))
         } catch (e) {
             console.error('Failed to save data to AsyncStorage', e)
         }
@@ -47,7 +49,7 @@ export class WeatherCache {
 
     public async getWeather(): Promise<WeatherCacheData | undefined> {
         try {
-            const value = await AsyncStorage.getItem('weather')
+            const value = await AsyncStorage.getItem(this.DATAKEY)
             if (value !== null) {
                 const parsedValue = JSON.parse(value)
                 return {
@@ -62,7 +64,7 @@ export class WeatherCache {
 
     public async clearWeather(): Promise<void> {
         try {
-            await AsyncStorage.setItem('weather', '')
+            await AsyncStorage.setItem(this.DATAKEY, '')
         } catch (e) {
             console.error('Failed to delete data from AsyncStorage', e)
         }
@@ -78,6 +80,25 @@ export class WeatherService {
     constructor(api: WeatherApi, cache: WeatherCache) {
         this.api = api
         this.cache = cache
+    }
+
+    public static convertTmpTypeToCelsius(
+        tmpType: TemperatureType,
+        tmpValue: number
+    ): number {
+        switch (tmpType) {
+            case 'F':
+                const F_MOD = 32
+                const F_COEF = 1.8
+
+                return (tmpValue - F_MOD) / F_COEF
+            case 'K':
+                const K_MOD = 273.15
+
+                return tmpValue - K_MOD
+            default:
+                return tmpValue
+        }
     }
 
     public async getOverview(
@@ -162,7 +183,10 @@ export class WeatherService {
                 date: new Date(dto.date),
                 city: dto.city,
                 tempType: 'C',
-                temp: this.convertTmpTypeToCelsius(dto.tempType, dto.temp),
+                temp: WeatherService.convertTmpTypeToCelsius(
+                    dto.tempType,
+                    dto.temp
+                ),
             }
         })
 
@@ -170,24 +194,5 @@ export class WeatherService {
         return weatherObjects.sort(
             (a, b) => a.date.getTime() - b.date.getTime()
         )
-    }
-
-    private convertTmpTypeToCelsius(
-        tmpType: TemperatureType,
-        tmpValue: number
-    ): number {
-        switch (tmpType) {
-            case 'F':
-                const F_MOD = 32
-                const F_COEF = 1.8
-
-                return (tmpValue - F_MOD) / F_COEF
-            case 'K':
-                const K_MOD = 273.15
-
-                return tmpValue - K_MOD
-            default:
-                return tmpValue
-        }
     }
 }
